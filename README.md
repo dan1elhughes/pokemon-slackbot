@@ -1,5 +1,7 @@
 # Pokébot
 
+[![CircleCI](https://circleci.com/gh/dan1elhughes/pokemon-slackbot.svg?style=svg)](https://circleci.com/gh/dan1elhughes/pokemon-slackbot)
+
 ## Usage
 
 Clone the repository and push it to Heroku, then set the following config variables:
