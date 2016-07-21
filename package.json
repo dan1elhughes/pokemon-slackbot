@@ -9,6 +9,9 @@
     "type": "git",
     "url": "git+https://dan1elhughes@github.com/dan1elhughes/pokemon-slackbot.git"
   },
+  "engines": {
+    "node": "6.2.2"
+  },
   "keywords": [],
   "author": "Dan Hughes <danhughes.dh+github@gmail.com>",
   "license": "MIT",
