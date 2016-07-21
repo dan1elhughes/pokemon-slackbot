@@ -1,0 +1,26 @@
+{
+  "name": "pokemon-slackbot",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://dan1elhughes@github.com/dan1elhughes/pokemon-slackbot.git"
+  },
+  "keywords": [],
+  "author": "Dan Hughes <danhughes.dh+github@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dan1elhughes/pokemon-slackbot/issues"
+  },
+  "homepage": "https://github.com/dan1elhughes/pokemon-slackbot#readme",
+  "dependencies": {
+    "dotenv": "^2.0.0",
+    "haversine": "^1.0.0",
+    "humanize": "0.0.9",
+    "request-promise": "^4.0.2",
+    "slackbots": "^0.5.1"
+  }
+}
