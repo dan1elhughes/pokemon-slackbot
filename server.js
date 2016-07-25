@@ -43,6 +43,7 @@ let getNearby = (start) => new Promise(resolve => {
 
 	request(opts).then(data => {
 		resolve(data.pokemon.map(p => ({
+			uid: p.id,
 			id: p.pokemonId,
 			name: species[p.pokemonId],
 			distance: Math.round(distance(start, {
@@ -56,15 +57,23 @@ let getNearby = (start) => new Promise(resolve => {
 
 let pad = number => number <= 999 ? ("00"+number).slice(-3) : number;
 
+let cache = {};
 let scan = () => {
 	getNearby(COORDS).then(function (result) {
 		console.log(`Got ${result.length} results`);
 
 		result = result.filter(p => p.distance < CATCH_THRESHOLD);
+		console.log(`Got ${result.length} nearby`);
+
+		var cacheCount = Object.keys(cache).length;
+		result = result.filter(p => {
+			var cached = cache[p.uid];
+			cache[p.uid] = true;
+			return typeof cached === 'undefined';
+		});
+		console.log(`Got ${result.length} new (${cacheCount} in cache)`);
 
 		result.sort((a, b) => a.distance - b.distance);
-
-		console.log(`Got ${result.length} nearby`);
 
 		result.forEach(p => {
 			p.name = p.name.toUpperCase();
