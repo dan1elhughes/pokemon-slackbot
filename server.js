@@ -2,6 +2,7 @@ const SlackBot = require('slackbots');
 const request = require('request-promise');
 const distance = require('haversine');
 const humanize = require('humanize');
+const species = require('./conf/species');
 
 const {
 	API_KEY,
@@ -32,16 +33,6 @@ let bot = new SlackBot({
 	name: 'Pokébot'
 });
 
-let getName = (id) => {
-	return new Promise(resolve => {
-		request(`https://pokeapi.co/api/v2/pokemon-species/${id}/`, {
-			json: true
-		}).then(data => {
-			resolve(data.name);
-		});
-	});
-};
-
 let getNearby = (start) => new Promise(resolve => {
 	let uri = `${api}/${start.latitude}/${start.longitude}`;
 	let json = true;
@@ -53,7 +44,7 @@ let getNearby = (start) => new Promise(resolve => {
 	request(opts).then(data => {
 		resolve(data.pokemon.map(p => ({
 			id: p.pokemonId,
-			name: getName(p.pokemonId),
+			name: species[p.pokemonId],
 			distance: Math.round(distance(start, {
 				latitude: p.latitude,
 				longitude: p.longitude
@@ -62,6 +53,8 @@ let getNearby = (start) => new Promise(resolve => {
 		})));
 	});
 });
+
+let pad = number => number <= 999 ? ("00"+number).slice(-3) : number;
 
 let scan = () => {
 	getNearby(COORDS).then(function (result) {
@@ -74,30 +67,25 @@ let scan = () => {
 		console.log(`Got ${result.length} nearby`);
 
 		result.forEach(p => {
-			p.name.then(name => {
+			p.name = p.name.toUpperCase();
 
-				console.log(`Got details for ${name}`);
-				p.name = name.toUpperCase();
+			let attachments = [{
+					thumb_url: `http://sprites.pokecheck.org/i/${pad(p.id)}.gif`,
+					fallback: `A wild ${p.name} appeared! (${p.distance} away, gone ${p.ttl})`,
+					pretext: `A wild ${p.name} appeared!`,
+					fields: [{
+						title: "Distance",
+						value: `${p.distance}m away`,
+						short: true
+					}, {
+						title: "Disappears",
+						value: `${p.ttl}`,
+						short: true
+					}]
+				}];
 
-				let attachments = [{
-						thumb_url: `https://pokeapi.co/media/sprites/pokemon/${p.id}.png`,
-						fallback: `A wild ${p.name} appeared! (${p.distance} away, gone ${p.ttl})`,
-						pretext: `A wild ${p.name} appeared!`,
-						fields: [{
-							title: "Distance",
-							value: `${p.distance}m away`,
-							short: true
-						}, {
-							title: "Disappears",
-							value: `${p.ttl}`,
-							short: true
-						}]
-					}];
-
-				bot.postAttachment(CHANNEL, attachments, opts);
-			});
+			bot.postAttachment(CHANNEL, attachments, opts, console.log.bind(console));
 		});
-
 	});
 };
 
