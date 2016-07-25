@@ -49,8 +49,7 @@ let getNearby = (start) => new Promise(resolve => {
 				latitude: p.latitude,
 				longitude: p.longitude
 			}) * 1000),
-			ttl: humanize.relativeTime(p.expiration_time),
-			expiry: p.expiration_time
+			ttl: humanize.relativeTime(p.expiration_time)
 		})));
 	});
 });
@@ -62,19 +61,37 @@ let scan = () => {
 	getNearby(COORDS).then(function (result) {
 		console.log(`Got ${result.length} results`);
 
+		result.sort((a, b) => a.distance - b.distance);
+
+		var isEqual = (a, b) => a.id === b.id && a.distance === b.distance;
+
+		result = result.filter((item, i, arr) => !i || isEqual(item, arr[i - 1]));
+		console.log(`Got ${result.length} non-duplicates`);
+
 		result = result.filter(p => p.distance < CATCH_THRESHOLD);
 		console.log(`Got ${result.length} nearby`);
 
+		Object.keys(cache).forEach(k => {
+			if (cache[k]-- === 0) {
+				delete cache[k];
+			}
+		});
+
 		var cacheCount = Object.keys(cache).length;
 		result = result.filter(p => {
-			var key = p.id + '/' + p.expiry;
-			var cached = cache[key];
-			cache[key] = true;
-			return typeof cached === 'undefined';
-		});
-		console.log(`Got ${result.length} new (${cacheCount} in cache)`);
+			var key = p.id + '/' + p.distance;
+			var isNew = typeof cache[key] === 'undefined';
 
-		result.sort((a, b) => a.distance - b.distance);
+			if (isNew) {
+				cache[key] = 20;
+			}
+
+			return isNew;
+		});
+
+		console.log(cache);
+		console.log(`Got ${result.length} new (${cacheCount} in cache)`);
+		console.log(`New pokeys: ${result.map(p => `${p.name} (${p.id}/${p.distance})`).join("\n")}`);
 
 		result.forEach(p => {
 			p.name = p.name.toUpperCase();
