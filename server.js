@@ -43,14 +43,14 @@ let getNearby = (start) => new Promise(resolve => {
 
 	request(opts).then(data => {
 		resolve(data.pokemon.map(p => ({
-			uid: p.id,
 			id: p.pokemonId,
 			name: species[p.pokemonId],
 			distance: Math.round(distance(start, {
 				latitude: p.latitude,
 				longitude: p.longitude
 			}) * 1000),
-			ttl: humanize.relativeTime(p.expiration_time)
+			ttl: humanize.relativeTime(p.expiration_time),
+			expiry: p.expiration_time
 		})));
 	});
 });
@@ -67,8 +67,9 @@ let scan = () => {
 
 		var cacheCount = Object.keys(cache).length;
 		result = result.filter(p => {
-			var cached = cache[p.uid];
-			cache[p.uid] = true;
+			var key = p.id + '/' + p.expiry;
+			var cached = cache[key];
+			cache[key] = true;
 			return typeof cached === 'undefined';
 		});
 		console.log(`Got ${result.length} new (${cacheCount} in cache)`);
