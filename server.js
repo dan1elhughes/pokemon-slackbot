@@ -62,58 +62,71 @@ let scan = () => {
 	getNearby(COORDS).then(result => {
 		console.log(`Got ${result.length} results`);
 
-		result.sort((a, b) => a.distance - b.distance);
-
-		var isEqual = (a, b) => a.id === b.id && a.distance === b.distance;
-
-		result = result.filter((item, i, arr) => !i || isEqual(item, arr[i - 1]));
-		console.log(`Got ${result.length} non-duplicates`);
-
-		result = result.filter(p => p.distance < CATCH_THRESHOLD);
-		console.log(`Got ${result.length} nearby`);
-
-		Object.keys(cache).forEach(k => {
-			if (cache[k]-- === 0) {
-				delete cache[k];
+		if (result === false) {
+			if (!cache.offline) {
+				bot.postMessage(CHANNEL, '`Unable to reach API. Sleeping...`', opts);
+				cache.offline = true;
 			}
-		});
-
-		var cacheCount = Object.keys(cache).length;
-		result = result.filter(p => {
-			var key = p.id + '/' + p.distance;
-			var isNew = typeof cache[key] === 'undefined';
-
-			if (isNew) {
-				cache[key] = 20;
+		} else {
+			if (cache.offline) {
+				bot.postMessage(CHANNEL, '`API back online. Restarting scanner...`', opts);
 			}
 
-			return isNew;
-		});
+			cache.offline = false;
 
-		console.log(cache);
-		console.log(`Got ${result.length} new (${cacheCount} in cache)`);
-		console.log(`New pokeys: ${result.map(p => `${p.name} (${p.id}/${p.distance})`).join("\n")}`);
+			result.sort((a, b) => a.distance - b.distance);
 
-		result.forEach(p => {
-			p.name = p.name.toUpperCase();
+			var isEqual = (a, b) => a.id === b.id && a.distance === b.distance;
 
-			let attachments = [{
-					thumb_url: `http://sprites.pokecheck.org/i/${pad(p.id)}.gif`,
-					fallback: `A wild ${p.name} appeared! (${p.distance} away, gone ${p.ttl})`,
-					pretext: `A wild ${p.name} appeared!`,
-					fields: [{
-						title: "Distance",
-						value: `${p.distance}m away`,
-						short: true
-					}, {
-						title: "Disappears",
-						value: `${p.ttl}`,
-						short: true
-					}]
-				}];
+			result = result.filter((item, i, arr) => !i || isEqual(item, arr[i - 1]));
+			console.log(`Got ${result.length} non-duplicates`);
 
-			bot.postAttachment(CHANNEL, attachments, opts, console.log.bind(console));
-		});
+			result = result.filter(p => p.distance < CATCH_THRESHOLD);
+			console.log(`Got ${result.length} nearby`);
+
+			Object.keys(cache).forEach(k => {
+				if (cache[k]-- === 0) {
+					delete cache[k];
+				}
+			});
+
+			var cacheCount = Object.keys(cache).length;
+			result = result.filter(p => {
+				var key = p.id + '/' + p.distance;
+				var isNew = typeof cache[key] === 'undefined';
+
+				if (isNew) {
+					cache[key] = 20;
+				}
+
+				return isNew;
+			});
+
+			console.log(cache);
+			console.log(`Got ${result.length} new (${cacheCount} in cache)`);
+			console.log(`New pokeys: ${result.map(p => `${p.name} (${p.id}/${p.distance})`).join("\n")}`);
+
+			result.forEach(p => {
+				p.name = p.name.toUpperCase();
+
+				let attachments = [{
+						thumb_url: `http://sprites.pokecheck.org/i/${pad(p.id)}.gif`,
+						fallback: `A wild ${p.name} appeared! (${p.distance} away, gone ${p.ttl})`,
+						pretext: `A wild ${p.name} appeared!`,
+						fields: [{
+							title: "Distance",
+							value: `${p.distance}m away`,
+							short: true
+						}, {
+							title: "Disappears",
+							value: `${p.ttl}`,
+							short: true
+						}]
+					}];
+
+				bot.postAttachment(CHANNEL, attachments, opts, console.log.bind(console));
+			});
+		}
 	});
 };
 
