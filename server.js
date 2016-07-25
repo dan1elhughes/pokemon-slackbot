@@ -36,21 +36,22 @@ let bot = new SlackBot({
 let getNearby = (start) => new Promise(resolve => {
 	let uri = `${api}/${start.latitude}/${start.longitude}`;
 	let json = true;
-	let opts = {
-		uri,
-		json
-	};
 
-	request(opts).then(data => {
-		resolve(data.pokemon.map(p => ({
-			id: p.pokemonId,
-			name: species[p.pokemonId],
-			distance: Math.round(distance(start, {
-				latitude: p.latitude,
-				longitude: p.longitude
-			}) * 1000),
-			ttl: humanize.relativeTime(p.expiration_time)
-		})));
+	request({ uri, json }).then(data => {
+		if (typeof data.pokemon === 'undefined') {
+			console.log('Unable to read from API');
+			resolve(false);
+		} else {
+			resolve(data.pokemon.map(p => ({
+				id: p.pokemonId,
+				name: species[p.pokemonId],
+				distance: Math.round(distance(start, {
+					latitude: p.latitude,
+					longitude: p.longitude
+				}) * 1000),
+				ttl: humanize.relativeTime(p.expiration_time)
+			})));
+		}
 	});
 });
 
@@ -58,7 +59,7 @@ let pad = number => number <= 999 ? ("00"+number).slice(-3) : number;
 
 let cache = {};
 let scan = () => {
-	getNearby(COORDS).then(function (result) {
+	getNearby(COORDS).then(result => {
 		console.log(`Got ${result.length} results`);
 
 		result.sort((a, b) => a.distance - b.distance);
