@@ -55,52 +55,52 @@ let getNearby = (lat, lng) => new Promise(resolve => {
 
 let cache = {};
 let scan = () => {
-		getNearby(LAT, LNG).then(result => {
-					console.log(`Got ${result.length} results`);
+	getNearby(LAT, LNG).then(result => {
+		console.log(`Got ${result.length} results`);
 
-					if (result === false) {
-						if (!cache.offline) {
-							messageAdapter.debug('Unable to reach API. Sleeping...');
-							cache.offline = true;
-						}
-					} else {
-						if (cache.offline) {
-							messageAdapter.debug('Unable to reach API. Sleeping...');
-						}
+		if (result === false) {
+			if (!cache.offline) {
+				messageAdapter.debug('Unable to reach API. Sleeping...');
+				cache.offline = true;
+			}
+		} else {
+			if (cache.offline) {
+				messageAdapter.debug('Unable to reach API. Sleeping...');
+			}
 
-						cache.offline = false;
+			cache.offline = false;
 
-						result.sort((a, b) => a.distance - b.distance);
+			result.sort((a, b) => a.distance - b.distance);
 
-						var isEqual = (a, b) => a.id === b.id && a.distance === b.distance;
+			var isEqual = (a, b) => a.id === b.id && a.distance === b.distance;
 
-						result = result.filter((item, i, arr) => !i || isEqual(item, arr[i - 1]));
-						console.log(`Got ${result.length} non-duplicates`);
+			result = result.filter((item, i, arr) => !i || isEqual(item, arr[i - 1]));
+			console.log(`Got ${result.length} non-duplicates`);
 
-						result = result.filter(p => p.distance < CATCH_THRESHOLD);
-						console.log(`Got ${result.length} nearby`);
+			result = result.filter(p => p.distance < CATCH_THRESHOLD);
+			console.log(`Got ${result.length} nearby`);
 
-						Object.keys(cache).forEach(k => {
-							if (cache[k]-- === 0) {
-								delete cache[k];
-							}
-						});
+			Object.keys(cache).forEach(k => {
+				if (cache[k]-- === 0) {
+					delete cache[k];
+				}
+			});
 
-						var cacheCount = Object.keys(cache).length;
-						result = result.filter(p => {
-							var key = p.id + '/' + p.distance;
-							var isNew = typeof cache[key] === 'undefined';
+			var cacheCount = Object.keys(cache).length;
+			result = result.filter(p => {
+				var key = p.id + '/' + p.distance;
+				var isNew = typeof cache[key] === 'undefined';
 
-							if (isNew) {
-								cache[key] = 20;
-							}
+				if (isNew) {
+					cache[key] = 20;
+				}
 
-							return isNew;
-						});
+				return isNew;
+			});
 
-						console.log(cache);
-						console.log(`Got ${result.length} new (${cacheCount} in cache)`);
-						console.log(`New pokeys: ${result.map(p => `${p.name} (${p.id}/${p.distance})`).join("\n")}`);
+			console.log(cache);
+			console.log(`Got ${result.length} new (${cacheCount} in cache)`);
+			console.log(`New pokeys: ${result.map(p => `${p.name} (${p.id}/${p.distance})`).join("\n")}`);
 
 			result.forEach(p => {
 				p.name = p.name.toUpperCase();
