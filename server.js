@@ -11,9 +11,11 @@ require('dotenv').load({
 const CATCH_THRESHOLD = process.env.CATCH_THRESHOLD || 75;
 const INTERVAL_MS = process.env.INTERVAL_MS || 60000;
 
-const messageAdapter = require(`./adapters/${process.env.MESSAGE_ADAPTER || 'console'}`);
+const messageAdapter = require(`./adapters/${process.env.ADAPTER || 'console'}`);
 assert(messageAdapter.debug, 'Message adapter must implement debug(msg)');
 assert(messageAdapter.send, 'Message adapter must implement send(msg)');
+
+console.log(`Using adapter: ${process.env.ADAPTER}`);
 
 assert(process.env.LAT, 'environment variable LAT not set');
 assert(process.env.LNG, 'environment variable LNG not set');
