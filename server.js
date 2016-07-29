@@ -11,17 +11,16 @@ require('dotenv').load({
 const CATCH_THRESHOLD = process.env.CATCH_THRESHOLD || 75;
 const INTERVAL_MS = process.env.INTERVAL_MS || 60000;
 
-const messageAdapter = require(`./adapters/${process.env.ADAPTER || 'console'}`);
+const adapter = process.env.ADAPTER || 'console';
+const messageAdapter = require(`./adapters/${adapter}`);
+console.log(`Using adapter: ${adapter}`);
 assert(messageAdapter.debug, 'Message adapter must implement debug(msg)');
 assert(messageAdapter.send, 'Message adapter must implement send(msg)');
-
-console.log(`Using adapter: ${process.env.ADAPTER}`);
 
 assert(process.env.LAT, 'environment variable LAT not set');
 assert(process.env.LNG, 'environment variable LNG not set');
 const LAT = process.env.LAT;
 const LNG = process.env.LNG;
-
 
 let api = 'https://pokevision.com/map/data';
 
@@ -35,9 +34,9 @@ let getNearby = (lat, lng) => new Promise(resolve => {
 	}).then(data => {
 		if (typeof data.pokemon === 'undefined') {
 			console.log('Unable to read from API');
-			resolve(false);
+			return resolve(false);
 		} else {
-			resolve(data.pokemon.map(p => ({
+			return resolve(data.pokemon.map(p => ({
 				id: p.pokemonId,
 				name: species[p.pokemonId],
 				distance: Math.round(distance({
@@ -55,7 +54,15 @@ let getNearby = (lat, lng) => new Promise(resolve => {
 
 let cache = {};
 let scan = () => {
-	getNearby(LAT, LNG).then(result => {
+
+	var check = Promise.resolve(true);
+
+	if (messageAdapter.shouldCheck && messageAdapter.shouldCheck(new Date()) === false) {
+		console.log('Skipping scan');
+		check = Promise.reject(false);
+	}
+
+	check.then(() => getNearby(LAT, LNG)).then(result => {
 		console.log(`Got ${result.length} results`);
 
 		if (result === false) {

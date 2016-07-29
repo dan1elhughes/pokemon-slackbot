@@ -30,6 +30,7 @@ Adapters implement the following methods:
 Adapters may also implement the following methods:
 
 - `start` returns a promise, resolved when the adapter is ready to accept messages or rejected if the adapter fails.
+- `shouldCheck(date)` returns true/false for if the scanner should run.
 
 ### Included adapters
 
