@@ -51,8 +51,16 @@ let send = p => {
 
 let start = () => new Promise(resolve => bot.on('start', resolve));
 
+let shouldCheck = (date) => {
+	var hrs = date.getHours();
+
+	// Between 9am and 5:59pm
+	return (hrs >= 9 && hrs <= 17);
+};
+
 module.exports = {
-	start,
 	debug,
-	send
+	send,
+	shouldCheck,
+	start
 };
