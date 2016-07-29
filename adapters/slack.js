@@ -30,7 +30,7 @@ let pad = number => number <= 999 ? ("00" + number).slice(-3) : number;
 
 let debug = msg => bot.postMessage(CHANNEL, `\`${msg}\``, opts);
 
-let send = function (p) {
+let send = p => {
 	let attachments = [{
 		thumb_url: `http://sprites.pokecheck.org/i/${pad(p.id)}.gif`,
 		fallback: `A wild ${p.name} appeared! (${p.distance} away, gone ${p.ttl})`,
@@ -49,11 +49,7 @@ let send = function (p) {
 	bot.postAttachment(CHANNEL, attachments, opts, console.log.bind(console));
 };
 
-let start = function () {
-	return new Promise(function (resolve) {
-		bot.on('start', resolve);
-	});
-};
+let start = () => new Promise(resolve => bot.on('start', resolve));
 
 module.exports = {
 	start,

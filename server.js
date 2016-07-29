@@ -109,7 +109,7 @@ let scan = () => {
 	});
 };
 
-var main = function () {
+var main = () => {
 	messageAdapter.debug(`Starting [interval: ${INTERVAL_MS}ms, range: ${CATCH_THRESHOLD}m]`);
 	scan();
 	setInterval(scan, INTERVAL_MS);

@@ -1,7 +1,7 @@
-module.exports.debug = function(msg) {
+module.exports.debug = function (msg) {
 	console.log(msg);
 };
 
-module.exports.send = function(msg) {
+module.exports.send = function (msg) {
 	console.log(msg);
 };
