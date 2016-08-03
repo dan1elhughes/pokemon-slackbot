@@ -2,6 +2,10 @@
 
 [![CircleCI](https://circleci.com/gh/dan1elhughes/pokemon-slackbot.svg?style=svg)](https://circleci.com/gh/dan1elhughes/pokemon-slackbot)
 
+## Currently inactive
+
+As this uses the [Pokevision API](https://pokevision.com/), it will not work until that API comes back online. PRs replacing the API for another much appreciated.
+
 ## Usage
 
 Clone the repository and push it to Heroku. Develop locally with `node server.js`.
